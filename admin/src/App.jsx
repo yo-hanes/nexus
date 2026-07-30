@@ -1,5 +1,6 @@
 import React from 'react';
 import {GenericPage, Login, Overview, Portal, useAuth} from '../../shared/Portal';
+import UserManagement from './UserManagement';
 const nav=[
   {id:'overview',label:'System overview'},
   {id:'settings',label:'Settings & users',badge:7},
@@ -10,5 +11,9 @@ const nav=[
 export default function App(){
   const auth=useAuth('admin');
   if(!auth.authenticated)return <Login portal="admin" onLogin={auth.login}/>;
-  return <Portal portal="admin" nav={nav} onLogout={auth.logout}>{active=>active==='overview'?<Overview kind="admin"/>:<GenericPage type={active}/>}</Portal>;
+  return <Portal portal="admin" nav={nav} onLogout={auth.logout}>{active=>{
+    if(active==='overview')return <Overview kind="admin"/>;
+    if(active==='settings')return <UserManagement/>;
+    return <GenericPage type={active}/>;
+  }}</Portal>;
 }
