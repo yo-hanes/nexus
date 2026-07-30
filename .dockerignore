@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.git
+.gitignore
+README.md
+npm-debug.log*
+src
+public
+standalone.html
+index.html
+vite.config.js

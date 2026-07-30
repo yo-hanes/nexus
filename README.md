@@ -1,16 +1,65 @@
-# React + Vite
+# Negarit Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Modular local ecosystem for the National Disaster Intelligence & Early Warning System.
 
-Currently, two official plugins are available:
+## Applications
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Portal | Local subdomain | Direct port | Access |
+|---|---|---|---|
+| Public & Community | `http://negarit.local` | `http://localhost:8080` | Public |
+| Government Approval | `http://approval.negarit.local` | `http://localhost:8081` | Protected |
+| Relief Agencies | `http://agencies.negarit.local` | `http://localhost:8082` | Protected |
+| Platform Admin | `http://admin.negarit.local` | `http://localhost:8083` | Protected |
 
-## React Compiler
+The protected portals use pre-filled demonstration credentials. Authentication sessions are isolated by portal in browser storage.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Run
 
-## Expanding the ESLint configuration
+```bash
+docker compose up -d --build
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The direct port URLs work immediately. To enable the named local subdomains on Linux/macOS, add them to the hosts file once:
+
+```bash
+echo "127.0.0.1 negarit.local approval.negarit.local agencies.negarit.local admin.negarit.local" | sudo tee -a /etc/hosts
+```
+
+Then open any of the local subdomains in a browser.
+
+## Services
+
+- `negarit` — host-based Nginx edge router on port 80
+- `negarit-main` — public/community portal
+- `negarit-approval` — government approval portal
+- `negarit-agency` — relief operations portal
+- `negarit-admin` — system governance portal
+- `negarit-broadcast-api` — simulated audited SMS/USSD broadcast gateway
+
+The shared design system lives in `shared/`. Each portal is independently buildable and deployable from its own folder while consuming the shared components.
+
+## Operations
+
+```bash
+docker compose ps
+docker compose logs -f
+docker compose restart
+docker compose down
+```
+
+Rebuild a single portal:
+
+```bash
+docker compose up -d --build approval
+```
+
+## Broadcast API
+
+Government approval submits:
+
+```http
+POST /api/broadcast/sms
+Content-Type: application/json
+```
+
+The gateway validates the payload, creates a unique broadcast ID, records the approver and channels, and returns `202 Accepted`. This is a local simulation and does not contact real carriers.

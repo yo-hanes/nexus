@@ -1,0 +1,62 @@
+name: negarit-platform
+
+x-portal: &portal
+  build:
+    context: .
+    dockerfile: Dockerfile
+  restart: unless-stopped
+  networks: [negarit]
+
+services:
+  main:
+    <<: *portal
+    container_name: negarit-main
+    build:
+      context: .
+      args: { APP: main }
+    ports: ["8080:80"]
+
+  approval:
+    <<: *portal
+    container_name: negarit-approval
+    build:
+      context: .
+      args: { APP: approval }
+    ports: ["8081:80"]
+
+  agency:
+    <<: *portal
+    container_name: negarit-agency
+    build:
+      context: .
+      args: { APP: agency }
+    ports: ["8082:80"]
+
+  admin:
+    <<: *portal
+    container_name: negarit-admin
+    build:
+      context: .
+      args: { APP: admin }
+    ports: ["8083:80"]
+
+  broadcast-api:
+    build:
+      context: ./services/broadcast-api
+    container_name: negarit-broadcast-api
+    restart: unless-stopped
+    networks: [negarit]
+
+  proxy:
+    image: nginx:1.27-alpine
+    container_name: negarit
+    restart: unless-stopped
+    depends_on: [main, approval, agency, admin, broadcast-api]
+    ports: ["80:80"]
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [negarit]
+
+networks:
+  negarit:
+    name: negarit-network
